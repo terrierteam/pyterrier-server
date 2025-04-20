@@ -19,6 +19,76 @@ def create_app(pipeline=None):
     if pipeline is None:
         pipeline = load_pipeline()
 
+    app.json.sort_keys = False
+
+    @app.route('/', methods=['GET'])
+    def index():
+        # a basic html form that issues a /search request
+        return """<html>
+<head>
+<title>PyTerrier Serve</title>
+<style>
+body { font-family: Arial, sans-serif; }
+h1 { color: #333; }
+form { margin: 20px 0; }
+input[type="text"] { width: 300px; padding: 10px; }
+input[type="submit"] { padding: 10px 20px; }
+</style>
+</head>
+<body>
+<h1>PyTerrier Serve</h1>
+<form action="/search" method="get">
+    <input type="text" name="q" placeholder="Enter your query" required>
+    <input type="submit" value="Search">
+</form>
+<h2>Search Results</h2>
+<div id="results"></div>
+<script>
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const query = document.querySelector('input[name="q"]').value;
+    fetch('/search?q=' + encodeURIComponent(query))
+        .then(response => response.json())
+        .then(data => {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            if (data.results.length === 0) {
+                resultsDiv.innerHTML = '<p>No results found.</p>';
+            } else {
+                // Create a table with the results
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                const headerRow = document.createElement('tr');
+                const headers = Object.keys(data.results[0]);
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.innerText = header;
+                    th.style.border = '1px solid #ddd';
+                    th.style.padding = '8px';
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+                data.results.forEach(result => {
+                    const row = document.createElement('tr');
+                    headers.forEach(header => {
+                        const td = document.createElement('td');
+                        td.innerText = result[header];
+                        td.style.border = '1px solid #ddd';
+                        td.style.padding = '8px';
+                        row.appendChild(td);
+                    });
+                    table.appendChild(row);
+                });
+                resultsDiv.appendChild(table);
+            }
+        });
+});
+</script>
+</body>
+</html>
+        """
+
     @app.route('/transform', methods=['POST'])
     def exec():
         try:
