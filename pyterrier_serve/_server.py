@@ -27,7 +27,7 @@ def create_app(pipeline=None):
             t0 = time()
             results = pipeline.transform(data)
             t1 = time()
-            duration = int((t1-t0)/1000)
+            duration = int((t1-t0)*1000)
             results = results.to_dict('records')
             return jsonify({'took': duration, 'results': results})
         except Exception as ex:
@@ -40,7 +40,7 @@ def create_app(pipeline=None):
             t0 = time()
             results = pipeline.search(query)
             t1 = time()
-            duration = int((t1-t0)/1000)
+            duration = int((t1-t0)*1000)
             results = results.to_dict('records')
             return jsonify({'took': duration, 'results': results})
         except Exception as ex:
