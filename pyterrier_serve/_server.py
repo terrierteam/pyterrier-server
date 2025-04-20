@@ -1,3 +1,4 @@
+from time import time
 import os
 import pandas as pd
 from flask import Flask, request, jsonify
@@ -23,9 +24,12 @@ def create_app(pipeline=None):
         try:
             data = request.get_json()
             data = pd.DataFrame(data)
+            t0 = time()
             results = pipeline.transform(data)
+            t1 = time()
+            duration = int(t1-t0)/1000
             results = results.to_dict('records')
-            return jsonify(results)
+            return jsonify({'took': duration, 'results': results})
         except Exception as ex:
             return jsonify({"error": str(ex)}), 500
 
@@ -33,9 +37,12 @@ def create_app(pipeline=None):
     def search():
         try:
             query = request.args.get('q')
+            t0 = time()
             results = pipeline.search(query)
+            t1 = time()
+            duration = int(t1-t0)/1000
             results = results.to_dict('records')
-            return jsonify(results)
+            return jsonify({'took': duration, 'results': results})
         except Exception as ex:
             return jsonify({"error": str(ex)}), 500
 
