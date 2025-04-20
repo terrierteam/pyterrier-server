@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyterrier-serve"
+description = "Serve PyTerrier Pipelines"
+readme = "README.md"
+authors = [
+    {name = "Sean MacAvaney", email = "sean.macavaney@glasgow.ac.uk"},
+]
+classifiers = [
+  "Programming Language :: Python",
+  "Operating System :: OS Independent",
+  "Topic :: Text Processing",
+  "Topic :: Text Processing :: Indexing",
+]
+requires-python = ">=3.10"
+dynamic = ["version", "dependencies"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyterrier_serve.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+[project.scripts]
+pyterrier-serve = "pyterrier_serve._cli:main"
+
+[project.urls]
+Repository = "https://github.com/seanmacavaney/pyterrier-serve"
+"Bug Tracker" = "https://github.com/seanmacavaney/pyterrier-serve/issues"
