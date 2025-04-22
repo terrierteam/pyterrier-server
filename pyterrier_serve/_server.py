@@ -52,8 +52,16 @@ document.querySelector('form').addEventListener('submit', function(event) {
         .then(data => {
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
+            const took = document.createElement('div');
+            took.style.color = '#999';
+            took.style.marginTop = '6px';
+            took.style.marginBottom = '6px';
+            took.innerText = 'Took ' + data.took + 'ms';
+            resultsDiv.appendChild(took);
             if (data.results.length === 0) {
-                resultsDiv.innerHTML = '<p>No results found.</p>';
+                const no_results = document.createElement('p');
+                no_results.innerText = 'No results found.'
+                resultsDiv.appendChild(no_results);
             } else {
                 // Create a table with the results
                 const table = document.createElement('table');
