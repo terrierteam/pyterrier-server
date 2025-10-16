@@ -18,7 +18,7 @@ functions:
       dataset = pt.get_dataset('irds:msmarco-passage')
       index = pyterrier_pisa.PisaIndex.from_hf('macavaney/msmarco-passage.pisa').bm25()
       LLM = ptr.readers.T5FiD("terrierteam/t5fid_base_nq")
-      p = index % 10 >> dataset.text_loader() >> LLM
+      p = index % 1 >> dataset.text_loader() >> LLM
 
   - name: doc2query
     task: doc2query 
