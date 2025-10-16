@@ -1,7 +1,6 @@
 # server.py
 import asyncio
 from flask import Flask, request, jsonify, render_template
-from flask import jsonify, render_template
 from pyterrier_server._loader import load_pipeline
 from fastmcp import Client
 from openai import OpenAI
@@ -119,7 +118,7 @@ def create_app():
 
             # Log tools used (if the response has tool info)
             tools_used = getattr(resp, "tool_usage", None)
-            if tools_used is None or tools_used is []:
+            if tools_used is None or tools_used == []:
                 tools_used = []
 
                 if hasattr(resp, "output") and resp.output:
