@@ -156,7 +156,7 @@ def mcp_port():
 def create_mcp_server(pipelines=None):
 
     # mcp = FastMCP("PYTERRIER_MCP",auth=auth)
-    mcp = FastMCP("PYTERRIER_MCP")
+    mcp = FastMCP("PYTERRIER_MCP",stateless_http=True)
     tools = {}
 
     if pipelines:
