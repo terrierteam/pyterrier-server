@@ -1,6 +1,7 @@
 # server.py
 import asyncio
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request
+from flask import jsonify, render_template
 from pyterrier_server._loader import load_pipeline
 from fastmcp import Client
 from openai import OpenAI
