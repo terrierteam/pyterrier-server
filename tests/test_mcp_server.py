@@ -37,17 +37,18 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         start_time = time.time()
         while True:
             try:
-                r = httpx.get(cls.mcp_url, timeout=1.0)
-                if r.status_code == 200:
+                tools = await self.client.list_tools()
+                if isinstance(tools,list):
                     print("✅ MCP server is ready!")
                     break
+                print("tools",tools)
             except (httpx.ConnectError, httpx.ReadTimeout):
                 pass
 
             if time.time() - start_time > timeout:
                 cls.server_process.terminate()
                 cls.server_process.join()
-                raise RuntimeError("❌ MCP server failed to start within 60 seconds")
+                raise RuntimeError(f"❌ MCP server failed to start within {timeout} seconds")
             time.sleep(1)
 
     @classmethod
