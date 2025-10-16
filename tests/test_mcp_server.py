@@ -27,7 +27,7 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         # Start the MCP server in a separate process
         cls.server_process = multiprocessing.Process(target=start_server, daemon=True)
         cls.server_process.start()
-        time.sleep(200)  # wait for server to start
+        time.sleep(50)  # wait for server to start
         cls.mcp_url = "http://localhost:8000/mcp"
 
     @classmethod

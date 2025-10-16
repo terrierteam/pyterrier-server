@@ -56,7 +56,7 @@ jobs:
 
      - name: Unit Test
        run: |
-         pytest --durations=20 -p no:faulthandler --json-report --json-report-file ${{ env.runtag }}.results.json --cov pyterrier_server --cov-report json:${{ env.runtag }}.coverage.json tests/
+         pytest --durations=100 -p no:faulthandler --json-report --json-report-file ${{ env.runtag }}.results.json --cov pyterrier_server --cov-report json:${{ env.runtag }}.coverage.json tests/
 
      - name: Report Test Results
        if: always()
