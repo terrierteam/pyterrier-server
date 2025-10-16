@@ -9,8 +9,15 @@ from functools import wraps
 logger = logging.getLogger(__name__)
 logging.getLogger("uvicorn.access").setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO)
-logging.basicConfig(level=logging.DEBUG)
 
+TYPE_MAP = {
+    "string": str,
+    "int": int,
+    "float": float,
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+}
 
 # ---------------------------
 # Utility to convert schema dict to Pydantic model
@@ -26,7 +33,6 @@ def schema_to_pydantic(name: str, schema) -> BaseModel:
       - list of dicts: [{"phrase": "name", "type": str, ...}, ...]
     Automatically sanitizes field names.
     """
-    print("schema", schema)
     schema = [ i for i in schema if i is not None]
 
     def sanitize_field_name(s):
@@ -50,6 +56,8 @@ def schema_to_pydantic(name: str, schema) -> BaseModel:
             # Determine field name
             field_name = entry.get("phrase") or entry.get("name") or entry.get("field") or f"field_{i}"
             field_type = entry.get("type", str)
+            if isinstance(field_type, str):
+                field_type = TYPE_MAP.get(field_type.lower(), str)
             fields[sanitize_field_name(field_name)] = (field_type, ...)
     else:
         raise TypeError(f"Schema for {name} must be dict or list, got {type(schema)}")
@@ -61,7 +69,7 @@ def schema_to_pydantic(name: str, schema) -> BaseModel:
 # ---------------------------
 # Utility to wrap pipeline function with input/output validation
 # ---------------------------
-def wrap_pipeline(pipeline_func, input_schema):
+def wrap_pipeline(pipeline_func, input_schema, output_schema):
     InputModel = schema_to_pydantic("InputModel", input_schema)
 
     # --- extract argument names from schema ---
@@ -93,7 +101,7 @@ def wrap_pipeline(pipeline_func, input_schema):
 
     # --- dynamically build the function source ---
     code = f"""
-def tool_func({arg_str}) -> dict:
+def tool_func({arg_str}) -> list[dict]:
     # Cast inputs to the expected types
     input_kwargs = {{}}
     for field, value in locals().items():
@@ -118,17 +126,7 @@ def tool_func({arg_str}) -> dict:
     elif isinstance(result, list):
         records = result
 
-    print({{'output': records}})
-    import json
-
-    try:
-        json.dumps({{'output': records}})
-    except Exception as e:
-        print(f"Serialization failed: {{e}}")
-        raise
-
-
-    return {{'output': records}}
+    return records
 """
     ns = {
         "InputModel": InputModel,
@@ -155,7 +153,7 @@ def mcp_port():
         port = 8000
     return port
 
-def create_mcp(pipelines=None):
+def create_mcp_server(pipelines=None):
 
     # mcp = FastMCP("PYTERRIER_MCP",auth=auth)
     mcp = FastMCP("PYTERRIER_MCP")
@@ -169,9 +167,12 @@ def create_mcp(pipelines=None):
                     continue
 
                 input_schema = info.get("properties") or [{"phrase": "query", "type": str}]
+                output_schema = info.get("outputs") or "list[dict]"
+                print("info",info)
+                print("output_schema",output_schema)
                 description = info.get("description", f"Pipeline {name}")
 
-                tool_func = wrap_pipeline(pipeline_func, input_schema)
+                tool_func = wrap_pipeline(pipeline_func, input_schema, output_schema)
                 tools[name] = mcp.tool(name=name, description=description)(tool_func)
 
     port = mcp_port()
@@ -185,4 +186,4 @@ def create_mcp(pipelines=None):
 if __name__ == "__main__":
     from pyterrier_server._loader import load_pipeline
     pipelines = load_pipeline()
-    create_mcp(pipelines)
+    create_mcp_server(pipelines)
