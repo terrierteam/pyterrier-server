@@ -30,26 +30,29 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         cls.server_process = multiprocessing.Process(target=start_server, daemon=True)
         cls.server_process.start()
 
-        cls.mcp_url = "http://localhost:8000/mcp"
+        cls.mcp_url = "http://0.0.0.0:8000/mcp"
 
-        # Poll until the server responds
-        timeout = 100  # max seconds to wait
-        start_time = time.time()
-        while True:
-            try:
-                tools = await self.client.list_tools()
-                if isinstance(tools,list):
-                    print("✅ MCP server is ready!")
-                    break
-                print("tools",tools)
-            except (httpx.ConnectError, httpx.ReadTimeout):
-                pass
+        async def wait_for_server():
+            timeout = 120
+            start_time = time.time()
+            while True:
+                try:
+                    async with Client(cls.mcp_url) as client:
+                        tools = await client.list_tools()
+                        if isinstance(tools, list) and tools:
+                            print("✅ MCP server is ready and responding with tools!")
+                            break
+                        print("[TEST] No tools yet, waiting...")
+                except Exception:
+                    pass
 
-            if time.time() - start_time > timeout:
-                cls.server_process.terminate()
-                cls.server_process.join()
-                raise RuntimeError(f"❌ MCP server failed to start within {timeout} seconds")
-            time.sleep(1)
+                if time.time() - start_time > timeout:
+                    raise RuntimeError(f"❌ MCP server failed to start within {timeout} seconds")
+                await asyncio.sleep(1)
+
+        # Run the async polling loop to wait for server readiness
+        asyncio.run(wait_for_server())
+
 
     @classmethod
     def tearDownClass(cls):
