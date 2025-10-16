@@ -1,2 +1,7 @@
 python-terrier
 flask
+fastmcp
+openai
+pyterrier_pisa
+pyterrier_rag
+pyterrier_doc2query

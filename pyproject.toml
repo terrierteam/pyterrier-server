@@ -19,14 +19,14 @@ requires-python = ">=3.10"
 dynamic = ["version", "dependencies"]
 
 [tool.setuptools.dynamic]
-version = {attr = "pyterrier_serve.__version__"}
+version = {attr = "pyterrier_server.__version__"}
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages.find]
 exclude = ["tests"]
 
 [project.scripts]
-pyterrier-serve = "pyterrier_serve._cli:main"
+pyterrier-serve = "pyterrier_server._cli:main"
 
 [project.urls]
 Repository = "https://github.com/seanmacavaney/pyterrier-serve"

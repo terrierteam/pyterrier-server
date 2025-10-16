@@ -13,7 +13,7 @@ You can install ``pyterrier-serve`` with pip:
 .. code-block:: console
     :caption: Installing ``pyterrier-serve`` with pip
 
-    pip install pyterrier_serve
+    pip install pyterrier_server
 
 Basic Usage
 ----------------------------------------------------------------------------------

@@ -1,1 +1,1 @@
-recursive-include pyterrier_serve *.rst
+recursive-include pyterrier_server *.rst
