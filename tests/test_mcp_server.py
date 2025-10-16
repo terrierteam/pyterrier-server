@@ -4,6 +4,7 @@ import unittest
 import asyncio
 import multiprocessing
 import time
+import httpx
 from fastmcp import Client
 
 from pyterrier_server._mcp_server import create_mcp_server
@@ -20,6 +21,7 @@ def start_server():
     pipelines = load_pipeline()
     create_mcp_server(pipelines)
 
+
 class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
 
     @classmethod
@@ -27,8 +29,26 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         # Start the MCP server in a separate process
         cls.server_process = multiprocessing.Process(target=start_server, daemon=True)
         cls.server_process.start()
-        time.sleep(50)  # wait for server to start
+
         cls.mcp_url = "http://localhost:8000/mcp"
+
+        # Poll until the server responds
+        timeout = 100  # max seconds to wait
+        start_time = time.time()
+        while True:
+            try:
+                r = httpx.get(cls.mcp_url, timeout=1.0)
+                if r.status_code == 200:
+                    print("✅ MCP server is ready!")
+                    break
+            except (httpx.ConnectError, httpx.ReadTimeout):
+                pass
+
+            if time.time() - start_time > timeout:
+                cls.server_process.terminate()
+                cls.server_process.join()
+                raise RuntimeError("❌ MCP server failed to start within 60 seconds")
+            time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
