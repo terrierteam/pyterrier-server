@@ -5,8 +5,9 @@ from flask import jsonify, render_template
 from pyterrier_server._loader import load_pipeline
 from fastmcp import Client
 from openai import OpenAI
-
-import os, logging, pandas as pd
+import os
+import logging
+import pandas as pd
 
 logger = logging.getLogger("pyterrier_server")
 logging.basicConfig(level=logging.INFO)
