@@ -14,6 +14,9 @@ from pyterrier_server._mcp_server import create_mcp_server
 def start_server():
     os.environ["PYTERRIER_MCP_PORT"] = "8000"
     from pyterrier_server._loader import load_pipeline
+    pipeline_str = os.environ.get("PYTERRIER_SERVER_PIPELINE")
+    if not pipeline_str:
+        os.environ["PYTERRIER_SERVER_PIPELINE"] = "functions.yaml"
     pipelines = load_pipeline()
     create_mcp_server(pipelines)
 

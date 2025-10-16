@@ -3,7 +3,6 @@ import pyterrier as pt
 from pyterrier import inspect, model as pt_model
 from dotenv import load_dotenv
 import logging
-import pprint
 import json
 
 load_dotenv()

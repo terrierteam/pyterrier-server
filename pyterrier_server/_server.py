@@ -1,7 +1,7 @@
 # server.py
 import asyncio
-import json
 from flask import Flask, request, jsonify, render_template
+from flask import jsonify, render_template
 from pyterrier_server._loader import load_pipeline
 from fastmcp import Client
 from openai import OpenAI
@@ -34,7 +34,6 @@ def create_app():
     if mcp_url:
         mcp_url = os.environ.get("PYTERRIER_MCP_URL")
         print(f"Connecting to MCP server at {mcp_url}")
-        result=None
         app.config["MCP_EXISTS"] = asyncio.run(getMCP(mcp_url))
 
     # --- Auto-create endpoints for each pipeline ---

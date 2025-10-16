@@ -4,7 +4,7 @@ import logging
 from fastmcp import FastMCP
 import pandas as pd
 from pydantic import BaseModel, create_model, ValidationError
-from functools import wraps
+import re
 
 logger = logging.getLogger(__name__)
 logging.getLogger("uvicorn.access").setLevel(logging.INFO)
@@ -18,12 +18,6 @@ TYPE_MAP = {
     "list": list,
     "dict": dict,
 }
-
-# ---------------------------
-# Utility to convert schema dict to Pydantic model
-# ---------------------------
-import re
-from pydantic import BaseModel, create_model
 
 def schema_to_pydantic(name: str, schema) -> BaseModel:
     """
