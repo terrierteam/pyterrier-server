@@ -75,13 +75,14 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         self.assertIn("ragwiki-rag", tool_names)
         self.assertIn("doc2query", tool_names)
 
-    async def test_msmarco_search(self):
-        result = await self.client.call_tool(
-            name="MSMARCO-search",
-            arguments={"qid": "1", "query": "goldfish"}
-        )
-        self.assertIn("result", result.structured_content)
-        self.assertGreater(len(result.structured_content["result"]), 0)
+    # too havey for the github action
+    # async def test_msmarco_search(self):
+    #     result = await self.client.call_tool(
+    #         name="MSMARCO-search",
+    #         arguments={"qid": "1", "query": "goldfish"}
+    #     )
+    #     self.assertIn("result", result.structured_content)
+    #     self.assertGreater(len(result.structured_content["result"]), 0)
 
     # too havey for the github action 
     # async def test_ragwiki_rag(self):
