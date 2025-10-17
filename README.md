@@ -12,6 +12,9 @@ A lightweight server for hosting and managing [PyTerrier](https://github.com/ter
 
 **PyTerrier Server** provides a simple way to deploy, expose, and manage information retrieval pipelines built with PyTerrier.  
 It can run standalone or connect to an **MCP server**, which allows AI models to automatically choose the right pipeline for a given task.
+An example on how the system works is the following:
+
+![Demo Video](videos/demo.gif)
 
 ---
 

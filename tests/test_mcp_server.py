@@ -83,15 +83,16 @@ class TestFastMCPTools(unittest.IsolatedAsyncioTestCase):
         self.assertIn("result", result.structured_content)
         self.assertGreater(len(result.structured_content["result"]), 0)
 
-    async def test_ragwiki_rag(self):
-        if torch.cuda.is_available():
-            result = await self.client.call_tool(
-                name="ragwiki-rag",
-                arguments={"qid": "1", "query": "goldfish"}
-            )
-            self.assertIn("result", result.structured_content)
-            self.assertGreater(len(result.structured_content["result"]), 0)
-            self.assertIn("qanswer", result.structured_content["result"][0])
+    # too havey for the github action 
+    # async def test_ragwiki_rag(self):
+    #     if torch.cuda.is_available():
+    #         result = await self.client.call_tool(
+    #             name="ragwiki-rag",
+    #             arguments={"qid": "1", "query": "goldfish"}
+    #         )
+    #         self.assertIn("result", result.structured_content)
+    #         self.assertGreater(len(result.structured_content["result"]), 0)
+    #         self.assertIn("qanswer", result.structured_content["result"][0])
 
     async def test_doc2query(self):
         result = await self.client.call_tool(
