@@ -174,10 +174,14 @@ def create_mcp_server(pipelines=None):
     logger.info(f"Starting MCP on {host}:{port} with tools: {list(tools.keys())}")
     mcp.run(transport="http", port=port, host=host)
 
+def main():
+    from pyterrier_server._loader import load_pipeline
+    pipelines = load_pipeline()
+    create_mcp_server(pipelines)
+
+
 # ---------------------------
 # Standalone run
 # ---------------------------
 if __name__ == "__main__":
-    from pyterrier_server._loader import load_pipeline
-    pipelines = load_pipeline()
-    create_mcp_server(pipelines)
+    main()
