@@ -26,7 +26,8 @@ dependencies = {file = ["requirements.txt"]}
 exclude = ["tests"]
 
 [project.scripts]
-pyterrier-serve = "pyterrier_server._cli:main"
+pyterrier-server = "pyterrier_server._cli:main"
+pyterrier-mcp = "pyterrier_server:_mcp_server:main"
 
 [project.urls]
 Repository = "https://github.com/seanmacavaney/pyterrier-serve"
