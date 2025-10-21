@@ -120,6 +120,11 @@ If you want to enable AI-based pipeline selection, start the MCP server:
 
 ```bash
 export PYTERRIER_MCP=true  # Optional: helps separate logs between servers
+pyterrier-mcp
+```
+or
+```bash
+export PYTERRIER_MCP=true  # Optional: helps separate logs between servers
 python -m pyterrier_server._mcp_server
 ```
 
@@ -136,6 +141,10 @@ ngrok http 8000
 
 In another terminal window:
 
+```bash
+pyterrier-server
+```
+or
 ```bash
 python -m pyterrier_server._server
 ```

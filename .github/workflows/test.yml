@@ -56,7 +56,13 @@ jobs:
 
      - name: Unit Test
        run: |
-         pytest --durations=200 -p no:faulthandler --json-report --json-report-file ${{ env.runtag }}.results.json --cov pyterrier_server --cov-report json:${{ env.runtag }}.coverage.json tests/
+         export COVERAGE_FILE=".coverage.${{ matrix.python-version }}"
+         pytest --durations=200 -p no:faulthandler \
+                --json-report \
+                --json-report-file ${{ env.runtag }}.results.json \
+                --cov pyterrier_server \
+                --cov-report json:${{ env.runtag }}.coverage.json \
+                tests/
 
      - name: Report Test Results
        if: always()
