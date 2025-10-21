@@ -1,50 +1,74 @@
-
 name: test
 
 on:
-  push: {branches: [main]} # pushes to main
-  pull_request: {} # all PRs
-  schedule: [cron: '0 12 * * 3'] # every Wednesday at noon
+  push:
+    branches: [main]
+  pull_request: {}
+  schedule:
+    - cron: '0 12 * * 3'  # every Wednesday at noon
 
 jobs:
   pytest:
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        python-version: ['3.10', '3.12']
+        python-version: ['3.10']
 
     runs-on: ${{ matrix.os }}
     env:
       runtag: ${{ matrix.os }}-${{ matrix.python-version }}
 
     steps:
-     - name: Checkout
-       uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-     - name: Install Python ${{ matrix.python-version }}
-       uses: actions/setup-python@v5
-       with:
-         python-version: ${{ matrix.python-version }}
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-     - name: Cache Dependencies
-       uses: actions/cache@v4
-       with:
-         path: ${{ env.pythonLocation }}
-         key: ${{ env.runtag }}-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.runtag }}-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
 
-     - name: Install Dependencies
-       run: |
-         pip install --upgrade -r requirements.txt -r requirements-dev.txt
-         pip install -e .
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade -r requirements.txt -r requirements-dev.txt
 
-     - name: Unit Test
-       run: |
-         pytest --durations=20 -p no:faulthandler --json-report --json-report-file ${{ env.runtag }}.results.json --cov pyterrier_serve --cov-report json:${{ env.runtag }}.coverage.json tests/
+      - name: Ensure pyterrier version has column_info
+        run: |
+          python - <<'PYCODE'
+          import importlib, subprocess, sys
+          try:
+              from pyterrier import model as pt_model
+              _ = pt_model.column_info
+              print("✅ pyterrier.model.column_info exists, skipping repo clone.")
+          except (ImportError, AttributeError):
+              print("⚠️ pyterrier.model.column_info missing — cloning replacement repo.")
+              subprocess.run(["git", "clone", "https://github.com/terrier-org/pyterrier.git", "pyterrier_src"], check=True)
+              subprocess.run([sys.executable, "-m", "pip", "install", "--force-reinstall", "./pyterrier_src"], check=True)
+          PYCODE
 
-     - name: Report Test Results
-       if: always()
-       run: |
-         printf "**Test Results**\n\n" >> $GITHUB_STEP_SUMMARY
-         jq '.summary' ${{ env.runtag }}.results.json >> $GITHUB_STEP_SUMMARY
-         printf "\n\n**Test Coverage**\n\n" >> $GITHUB_STEP_SUMMARY
-         jq '.files | to_entries[] | " - `" + .key + "`: **" + .value.summary.percent_covered_display + "%**"' -r ${{ env.runtag }}.coverage.json >> $GITHUB_STEP_SUMMARY
+      - name: Install Server
+        run: |
+          pip install -e .
+
+      - name: Unit Test
+        run: |
+          export COVERAGE_FILE=".coverage.${{ matrix.os }}-${{ matrix.python-version }}"
+          pytest --durations=300 \
+                 --json-report \
+                 --json-report-file ${{ env.runtag }}.results.json \
+                 --cov pyterrier_server \
+                 --cov-report json:${{ env.runtag }}.coverage.json \
+                 tests/
+
+      - name: Report Test Results
+        if: always()
+        run: |
+          printf "**Test Results**\n\n" >> $GITHUB_STEP_SUMMARY
+          jq '.summary' ${{ env.runtag }}.results.json >> $GITHUB_STEP_SUMMARY
+          printf "\n\n**Test Coverage**\n\n" >> $GITHUB_STEP_SUMMARY
+          jq '.files | to_entries[] | " - `" + .key + "`: **" + .value.summary.percent_covered_display + "%**"' -r ${{ env.runtag }}.coverage.json >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PyTerrier Serve</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; }
+h1 { color: #333; }
+form { margin: 20px 0; }
+input[type="text"] { width: 300px; padding: 10px; }
+select, input[type="submit"] { padding: 10px; margin-left: 8px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+#results p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>PyTerrier Serve</h1>
+
+<form id="searchForm">
+  <input type="text" name="q" placeholder="Enter your query" required>
+  <select id="mode">
+    <option value="search">Search</option>
+    <option value="rag">RAG</option>
+    <option value="ai">AI</option>
+  </select>
+  <input type="submit" value="Go">
+</form>
+
+<h2>Results</h2>
+<div id="results"></div>
+
+<script>
+async function setupModes() {
+  try {
+    const res = await fetch('/config');
+    const cfg = await res.json();
+    const pipelines = cfg.available_pipelines || [];
+    const mcpEnabled = cfg.mcp_enabled;
+    const modeSelect = document.getElementById('mode');
+
+    modeSelect.innerHTML = ''; // clear current options
+
+    // Add pipeline options
+    pipelines.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.name;  // use the actual pipeline name
+      opt.textContent = p.task;  // display task or human-readable name
+      modeSelect.appendChild(opt);
+    });
+
+    // Add AI if MCP enabled
+    if (mcpEnabled) {
+      const opt = document.createElement('option');
+      opt.value = 'ai';
+      opt.textContent = 'AI';
+      modeSelect.appendChild(opt);
+    }
+
+  } catch (err) {
+    console.warn("Couldn't fetch /config:", err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', setupModes);
+
+document.getElementById('searchForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const query = document.querySelector('input[name="q"]').value;
+    const mode = document.getElementById('mode').value;
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<p>Loading...</p>';
+
+    try {
+        let endpoint = mode === 'ai' ? '/ai' : `/pipeline/${mode}`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: query })
+        });
+
+        const data = await response.json();
+
+        if (mode === 'ai') {
+            // AI returns {"output": "...", "tools_used": [...]}
+            const tools = data.tools_used.map(t => {
+                return `<strong>${t.name}</strong>: ${t.output.replace(/\n/g, "<br>")}`;
+            }).join("<br><br>");
+
+            resultsDiv.innerHTML = `
+                <p><strong>AI Output:</strong></p>
+                <p>${data.output.replace(/\n/g, "<br>")}</p>
+                <p><strong>Tools Used:</strong></p>
+                <p>${tools}</p>
+            `;
+        } else {
+            // Pipelines return array of objects
+            const results = data.results || data;
+            renderTable(results);
+        }
+
+    } catch (err) {
+        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err}</p>`;
+    }
+});
+
+
+function renderTable(results) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+
+    if (!results || results.length === 0) {
+        resultsDiv.innerHTML = '<p>No results found.</p>';
+        return;
+    }
+
+    // Extract headers from first record
+    const headers = Object.keys(results[0]);
+
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+    headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // Add rows
+    results.forEach(row => {
+        const tr = document.createElement('tr');
+        headers.forEach(h => {
+            const td = document.createElement('td');
+            let val = row[h];
+
+            // Preserve line breaks in text fields
+            if (typeof val === 'string') {
+                td.innerHTML = val.replace(/\n/g, '<br>');
+            } else {
+                td.textContent = val;
+            }
+
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
+
+    resultsDiv.appendChild(table);
+}
+
+</script>
+</body>
+</html>

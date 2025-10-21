@@ -1,0 +1,35 @@
+functions:
+  - name: MSMARCO-search
+    task: search
+    description: Use this function to search for relevant documents in a PyTerrier index. The documents extracted are from the MSMARCO dataset, which contains passages from web pages.
+    pipeline: |
+      import pyterrier_pisa, pyterrier as pt
+      dataset = pt.get_dataset('irds:msmarco-passage')
+      index = pyterrier_pisa.PisaIndex.from_hf('macavaney/msmarco-passage.pisa').bm25()
+      p = index % 10 >> dataset.text_loader()
+
+  - name: ragwiki-rag
+    task: rag
+    description: Use this function to perform retrieval-augmented generation (RAG) using a PyTerrier index and a language model. This function retrieves relevant documents based on the query and generates a response using the retrieved documents as context. The documents extracted are from the Wikipedia dataset.
+    pipeline: |
+      import os, pyterrier_pisa, pyterrier_rag as ptr, pyterrier as pt
+      from dotenv import load_dotenv
+      load_dotenv()
+      dataset = pt.get_dataset('irds:msmarco-passage')
+      index = pyterrier_pisa.PisaIndex.from_hf('macavaney/msmarco-passage.pisa').bm25()
+      LLM = ptr.readers.T5FiD("terrierteam/t5fid_base_nq")
+      p = index % 1 >> dataset.text_loader() >> LLM
+
+  - name: doc2query
+    task: doc2query 
+    description: Use this function to generate synthetic queries for documents in a PyTerrier index using the doc2query method. This can help improve the retrieval performance of the index by augmenting the documents with additional queries.
+    properties: 
+      - name: docno
+        type: str
+        description: The unique identifier for each document in the index.
+      - name: text
+        type: str
+        description: The main content of the document.
+    pipeline: |
+      import pyterrier_doc2query
+      p = pyterrier_doc2query.Doc2Query()
