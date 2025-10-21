@@ -28,6 +28,7 @@ Clone the repository and install dependencies:
 git clone https://github.com/<your-username>/pyterrier-server.git
 cd pyterrier-server
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ### 2. Environment Setup

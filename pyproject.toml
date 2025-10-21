@@ -8,6 +8,7 @@ description = "Serve PyTerrier Pipelines"
 readme = "README.md"
 authors = [
     {name = "Sean MacAvaney", email = "sean.macavaney@glasgow.ac.uk"},
+    {name = "Akis Lionis", email = "sean.macavaney@glasgow.ac.uk"},
 ]
 classifiers = [
   "Programming Language :: Python",
@@ -27,7 +28,7 @@ exclude = ["tests"]
 
 [project.scripts]
 pyterrier-server = "pyterrier_server._cli:main"
-pyterrier-mcp = "pyterrier_server:_mcp_server:main"
+pyterrier-mcp = "pyterrier_server._mcp_server:main"
 
 [project.urls]
 Repository = "https://github.com/seanmacavaney/pyterrier-serve"
